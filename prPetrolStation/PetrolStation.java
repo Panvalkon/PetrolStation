@@ -44,7 +44,7 @@ public class PetrolStation {
 			while (sc.hasNextLine()) {
 				try (Scanner line = new Scanner(sc.nextLine())) {
 					line.useLocale(Locale.ENGLISH);
-					line.useDelimiter("\\s*");
+					line.useDelimiter("[ ]");
 					try {
 						int dispNum = line.nextInt();
 						String fuelType = line.next();
@@ -70,7 +70,6 @@ public class PetrolStation {
 		for (int i = 0; i < NUM_DISP; i++) {
 			dispensers.get(string).add(0.0);
 		}
-
 	}
 
 	public PetrolStation(String name, Map<String, Double> prices, String filename) {
@@ -87,7 +86,7 @@ public class PetrolStation {
 		if (!dispensers.containsKey(fuelType)) {
 			throw new PetrolStationException("Station does not have such fuel type");
 		}
-		if (dispensers.get(fuelType).get(dispNum) != 0) {
+		if (dispensers.get(fuelType).get(dispNum) > 0) {
 
 			if (dispensers.get(fuelType).get(dispNum) < amount) {
 				amount = dispensers.get(fuelType).get(dispNum);
@@ -114,7 +113,8 @@ public class PetrolStation {
 	}
 
 	public void bill(String licensePlate) {
-		try (PrintWriter pw = new PrintWriter(licensePlate)) {
+		String filename = this.name + "_" + licensePlate;
+		try (PrintWriter pw = new PrintWriter(filename)) {
 			double total = 0;
 			for (Ticket ticket : refuelings.get(licensePlate)) {
 				if (!ticket.getBilled()) {
@@ -128,6 +128,7 @@ public class PetrolStation {
 			// just in case;
 		}
 	}
+
 	public double getaAlreadyBilled(String licensePlate) {
 		double totalPaid = 0;
 		for (Ticket ticket : refuelings.get(licensePlate)) {
@@ -137,23 +138,22 @@ public class PetrolStation {
 		}
 		return totalPaid;
 	}
-	
+
 	@Override
 	public String toString() {
 		String s = new String(this.name + " = \n");
-		
-		for (Entry<String, List<Double>> fuelType :  dispensers.entrySet()) {
+
+		for (Entry<String, List<Double>> fuelType : dispensers.entrySet()) {
 			StringJoiner sj = new StringJoiner(", ", "[", "]");
-			for(double d : fuelType.getValue()) {
+			for (double d : fuelType.getValue()) {
 				sj.add(String.valueOf(d));
 			}
-			s += fuelType.getKey() + ": " + sj.toString() + "\nRefuelings :";
+			s += fuelType.getKey() + ": " + sj.toString() + "\n";
 		}
+		s += "Refuelings: ";
 		StringJoiner sj = new StringJoiner(", ", "[", "]");
 		for (SortedSet<Ticket> ticket : refuelings.values()) {
-			
 			sj.add(ticket.toString());
-			
 		}
 		return s += sj.toString();
 	}
